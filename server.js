@@ -12,15 +12,15 @@ require('dotenv').config();
 // bring in the PORT by using process.env.variable name
 const PORT = process.env.PORT || 3001;
 
-app.get('/', (request, response) => {
-  console.log('Hello out there');
-  response.send('I like pizza');
-})
+// app.get('/', (request, response) => {
+//   console.log('Hello out there');
+//   response.send('I like pizza');
+// })
 
-app.get('/public', (request, response) => {
-  console.log('It is monday');
-  response.send('Tell me about it');
-})
+// app.get('/public', (request, response) => {
+//   console.log('It is monday');
+//   response.send('Tell me about it');
+// })
 
 ////////////////LOCATION
 
@@ -31,7 +31,9 @@ app.get('/public', (request, response) => {
     let geoData = require('./data/location.json');
     let returnObj = new Location (search_query, geoData[0]);
     
-    console.log(returnObj);
+    // console.log(returnObj);
+    
+    response.status(200).send(returnObj);
     }
     catch(err){
       console.log('Error!', err);
@@ -55,7 +57,7 @@ app.get('/public', (request, response) => {
     geoData.data.forEach(day => {
       new Weather (day, weatherArray)
     });
-    response.status(200)
+    response.status(200).send(weatherArray);
   }
   catch(err){
     console.log('Error!', err);
