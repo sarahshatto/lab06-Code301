@@ -1,9 +1,10 @@
 'use strict'
 // The name of the library that is going to create the server : express
 const express = require('express');
-const app = express();
 const cors = require('cors');
+const app = express();
 app.use(cors());
+
 // dotenv lets us get our secrets from our .env file
 require('dotenv').config();
 
