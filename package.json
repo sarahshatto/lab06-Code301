@@ -1,0 +1,25 @@
+{
+  "name": "lab06-code301",
+  "version": "1.0.0",
+  "description": "Lab-06",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sarahshatto/lab06-Code301.git"
+  },
+  "author": "Sarah Shatto",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sarahshatto/lab06-Code301/issues"
+  },
+  "homepage": "https://github.com/sarahshatto/lab06-Code301#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1"
+  }
+}
