@@ -1,7 +1,9 @@
 'use strict'
 // The name of the library that is going to create the server : express
-const express = require('express')
+const express = require('express');
+const cors = require('cors');
 const app = express();
+app.use(cors());
 
 // dotenv lets us get our secrets from our .env file
 require('dotenv').config();
@@ -30,14 +32,12 @@ const PORT = process.env.PORT || 3001;
     let search_query = request.query.city;
     let geoData = require('./data/location.json');
     let returnObj = new Location (search_query, geoData[0]);
-    
-    // console.log(returnObj);
-    
+
     response.status(200).send(returnObj);
     }
     catch(err){
       console.log('Error!', err);
-      response.status(500).send('sorry!');
+      response.status(500).send('Oh no!');
     }
   });
 
@@ -53,15 +53,15 @@ const PORT = process.env.PORT || 3001;
   app.get('/weather', (request, response) => {
   try {
     let weatherArray = [];
-    let geoData = require('./data/weather.json')
+    let geoData = require('./data/weather.json');
     geoData.data.forEach(day => {
-      new Weather (day, weatherArray)
-    });
+      new Weather(day, weatherArray);
+    })
     response.status(200).send(weatherArray);
   }
   catch(err){
     console.log('Error!', err);
-    response.status(500).send('sorry!');
+    response.status(500).send('sorry! Issue with our servers!');
   }
 
 })
