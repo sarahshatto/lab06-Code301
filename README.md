@@ -89,18 +89,24 @@ Heroku deployment
 
 Create an instance on Heroku. Refer to lecture 5 for a reminder of the steps, if needed.
 In the Deploy tab, connect your instance to your repository and enable automatic deploys from your master branch. Deploy your application and make sure there are no errors.
+
+/////////////////
 Feature Tasks
 
 See the Trello board for your feature tasks for today's lab.
+
+
+//////////////
 
 Documentation
 
 Your README.md must include:
 
-# Project Name
+# Project Name: City Bus
 
-**Author**: Your Name Goes Here
-**Version**: 1.0.0 (increment the patch/fix version number if you make more commits past your first submission)
+**Author**: Sarah Shatto
+***with help from other 301 students such as: Sean Murray***
+**Version**: 1.0.0 
 
 ## Overview
 <!-- Provide a high level overview of what this application is and why you are building it, beyond the fact that it's an assignment for this class. (i.e. What's your problem domain?) -->
