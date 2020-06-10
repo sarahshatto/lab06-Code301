@@ -55,17 +55,25 @@ const PORT = process.env.PORT || 3001;
 ////////////////WEATHER 
 
   app.get('/weather', (request, response) => {
-  try {
-    let geoData = require('./data/weather.json');
+  // try {
+    // let geoData = require('./data/weather.json');
+    let search_query = request.query.search_query;
+    let url = `https://api.weatherbit.io/v2.0/current?city=${search_query}&key=${process.env.WEATHER_API_KEY}`;
+
+    superagent.get(url)
+    .then(resultsFromSuperAgent => {
+      let finalObj = new Weather(day, resultsFromSuperAgent.body[0]);
+      response.status(200).send(finalObj);
+
     let weatherArray = geoData.data.map(day => {
       return new Weather(day);
     })
     response.status(200).send(weatherArray);
   }
-  catch(err){
-    console.log('Error!', err);
-    response.status(500).send('sorry! Issue with our servers!');
-  }
+  // catch(err){
+  //   console.log('Error!', err);
+  //   response.status(500).send('sorry! Issue with our servers!');
+  // }
 
 })
 
@@ -74,6 +82,15 @@ function Weather(obj){
   this.time = obj.valid_date;
   // array.push(this);
 }
+
+// HIKING
+
+app.get('/trails', (request, response) => {
+  try{
+    let latitude = request.query.latitude;
+    let longitude = request.
+  }
+})
 
 // 
 app.get('*', (request, response) => {
