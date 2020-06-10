@@ -57,7 +57,7 @@ const PORT = process.env.PORT || 3001;
   app.get('/weather', (request, response) => {
     let search_query = request.query.search_query;
     
-    let url = `https://api.weatherbit.io/v2.0/current?city=${search_query}&key=${process.env.WEATHER_API_KEY}`;
+    let url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${search_query}&key=${process.env.WEATHER_API_KEY}`;
 
     superagent.get(url)
     .then(resultsFromSuperAgent => {
@@ -82,13 +82,11 @@ app.get('/trails', (request, response) => {
     let latitude = request.query.latitude;
     let longitude = request.query.longitude;
 
-    let url = `https://www.hikingproject.com/data/get-trails?lat=${latitude}&lon=${longitude}&maxDistance=10&key=$${process.TRAIL_API_KEY}`;
+    let url = `https://www.hikingproject.com/data/get-trails?lat=${latitude}&lon=${longitude}&maxDistance=10&key=${process.env.TRAIL_API_KEY}`;
 
     superagent.get(url)
     .then(resultsFromSuperAgent => {
-      let hikingResults = resultsFromSuperAgent.body.trails.map(hike => {
-        return new Hiking(hike);
-      })
+      let hikingResults = resultsFromSuperAgent.body.trails.map(hike => new Hiking(hike));
       response.status(200).send(hikingResults);
    }).catch(err => console.log(err))
   } catch(err) {
@@ -106,8 +104,8 @@ function Hiking(obj) {
   this.summary=obj.summary;
   this.trail_url=obj.url;
   this.conditions=`${obj.conditionDetails || ''} ${obj.conditionStatus}`;
-  this.conditions_date=obj.conditionDate.slice(0, obj.conditionDate.indexof(' '));
-  this.conditions_time=obj.conditionDate.slice(obj.conditionDate.indexof(' ')+1, obj.conditionDate.length);
+  this.conditions_date=obj.conditionDate.slice(0, obj.conditionDate.indexOf(' '));
+  this.conditions_time=obj.conditionDate.slice(obj.conditionDate.indexOf(' ')+1, obj.conditionDate.length);
 }
 
 app.get('*', (request, response) => {
