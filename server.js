@@ -1,4 +1,5 @@
 'use strict'
+const superagent = require('superagent')
 // The name of the library that is going to create the server : express
 const express = require('express');
 const cors = require('cors');
@@ -27,19 +28,22 @@ const PORT = process.env.PORT || 3001;
 ////////////////LOCATION
 
   app.get('/location', (request, response) => {
-    try {
-    console.log(request.query.city);
-    let search_query = request.query.city;
-    let geoData = require('./data/location.json');
-    let returnObj = new Location (search_query, geoData[0]);
-
-    response.status(200).send(returnObj);
-    }
-    catch(err){
-      console.log('Error!', err);
-      response.status(500).send('Oh no!');
-    }
-  });
+    // try {
+    // console.log(request.query.city);
+    let city = request.query.city;
+    let url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEO_DATA_API_KEY}&q=${city}&format=json`;
+  
+    superagent.get(url)
+    .then(resultsFromSuperAgent => {
+      let finalObj = new Location(city, resultsFromSuperAgent.body[0]);
+      response.status(200).send(finalObj);
+    })
+  // }
+    // catch(err){
+    //   console.log('Error!', err);
+    //   response.status(500).send('Oh no!');
+    // }
+})
 
   function Location (search_query, obj){
     this.search_query = search_query;
@@ -52,10 +56,9 @@ const PORT = process.env.PORT || 3001;
 
   app.get('/weather', (request, response) => {
   try {
-    let weatherArray = [];
     let geoData = require('./data/weather.json');
-    geoData.data.forEach(day => {
-      new Weather(day, weatherArray);
+    let weatherArray = geoData.data.map(day => {
+      return new Weather(day);
     })
     response.status(200).send(weatherArray);
   }
@@ -66,10 +69,10 @@ const PORT = process.env.PORT || 3001;
 
 })
 
-function Weather(obj, array){
+function Weather(obj){
   this.forecast = obj.weather.description;
   this.time = obj.valid_date;
-  array.push(this);
+  // array.push(this);
 }
 
 // 
