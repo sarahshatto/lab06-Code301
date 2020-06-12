@@ -17,3 +17,4 @@ INSERT INTO locations ( search_query, formatted_query, latitude, longitude) VALU
 SELECT * FROM locations; 
 
 -- TEST TABLE IN TERMINAL: $ psql -d city_explorer -f schema.sql
+-- LOOK AT YOUR DATABASE: $ heroku pg:psql --app lab-06-sshatto

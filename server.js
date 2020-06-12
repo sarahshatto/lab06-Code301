@@ -3,6 +3,7 @@ const superagent = require('superagent');
 const express = require('express');
 const cors = require('cors');
 const pg = require('pg');
+const { json } = require('express');
 const app = express();
 app.use(cors());
 
@@ -13,50 +14,51 @@ const PORT = process.env.PORT || 3001;
 const client = new pg.Client(process.env.DATABASE_URL);
 client.on('error', err => console.error(err));
 
-////////////////LOCATION
+//////////////// LIST OF HANDLERS:
 
-app.get('/location', (request, response) => {
-
-  try {
-    let city = request.query.city;
-    let url = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEO_DATA_API_KEY}&q=${city}&format=json`;
-    let safeValue = [city];
-    let sqlQuery = 'SELECT * FROM locations WHERE search_query LIKE ($1);';
+app.get('/location', locationHandler); 
+app.get('/location', movieHandler); 
+// app.get('/restaurants', restaurantHandler); 
+// app.get('*', handleNotFound); 
 
 
-    client.query(sqlQuery, safeValue)
-    .then(sqlResults => {
-      console.log(city)
-        if (sqlResults.rowCount !== 0) {
-          console.log(sqlResults);
-          response.status(200).send(sqlResults.rows[0]);
-        } else {
-          superagent.get(url)
-            .then(resultsFromSuperAgent => {
-              console.log('api route', resultsFromSuperAgent.body)
-              let finalObj = new Location(city, resultsFromSuperAgent.body[0]);
-              response.status(200).send(finalObj);
-              console.log(Location);
-              let sqlQuery = 'INSERT INTO locations (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4);';
-              let safeValue = [finalObj.search_query, finalObj.formatted_query, finalObj.latitude, finalObj.longitude];
-              client.query(sqlQuery, safeValue)
-              .then(()=>{})
-            })
-            .catch(err => console.log(err))
-        }
-      })
-  } catch (err) {
-    console.log('Error', err);
-    response.status(500).send('your call cannot be completed at this time');
+//////////////// LOCATION HANDLER: 
+
+function locationHandler(request, response){
+
+  let city = request.query.city; // get the city the user requested  
+  let url = 'https://us1.locationiq.com/v1/search.php'; // grab the URL and put in the API key 
+  let safeValue = [city]; // Setup the SQL query  
+  let sqlQuery = 'SELECT * FROM locations WHERE search_query LIKE ($1);'; // database: grab everything from table that matches search_query
+  const queryParams = {
+    key: process.env.GEO_DATA_API_KEY,
+    q: city,
+    format: 'json',
+    limit: 1
   }
-})
 
-function Location(search_query, obj) {
-  this.search_query = search_query;
-  this.formatted_query = obj.display_name;
-  this.latitude = obj.lat;
-  this.longitude = obj.lon;
-}
+  client.query(sqlQuery, safeValue)
+    .then(sqlResults => {
+      console.log(city);
+      if (sqlResults.rowCount !== 0) {
+        console.log(sqlResults);
+        response.status(200).send(sqlResults.rows[0]);
+      } else {
+        superagent.get(url)
+        .query(queryParams)
+        .then(data => {
+          console.log('results from superagent', data.body);
+          const geoData = data.body[0];
+          const location = new Location(city, geoData);
+
+          response.status(200).send(location);
+        }).catch(err => {
+          console.log(err)
+          response.status(500).send('Sorry, something went wrong!');
+        })
+      }
+    })
+  }
 
 ////////////////WEATHER 
 
@@ -101,6 +103,33 @@ app.get('/trails', (request, response) => {
   }
 })
 
+//////////////// MOVIE HANDLER 
+
+function movieHandler(request, response){
+  let city = request.query.search_query;
+  let moviesURL = 'https://api.themoviedb.org/3/search/movie';
+  let safeValue = [city];
+  let sqlQuery = 'SELECT * FROM locations WHERE search_query LIKE ($1);'; 
+
+  const queryParams = {
+    key: process.env.MOVIE_API_KEY,
+    q: city,
+    format: 'json',
+    limit: 5,
+  }
+
+
+}
+
+//////////////// CONSTRUCTORS: 
+
+function Location(search_query, obj) {
+  this.search_query = search_query;
+  this.formatted_query = obj.display_name;
+  this.latitude = obj.lat;
+  this.longitude = obj.lon;
+}
+
 function Hiking(obj) {
   this.name = obj.name;
   this.location = obj.location;
@@ -113,6 +142,7 @@ function Hiking(obj) {
   this.conditions_date = obj.conditionDate.slice(0, obj.conditionDate.indexOf(' '));
   this.conditions_time = obj.conditionDate.slice(obj.conditionDate.indexOf(' ') + 1, obj.conditionDate.length);
 }
+
 
 app.get('*', (request, response) => {
   response.status(404).send('sorry!')
