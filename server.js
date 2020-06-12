@@ -47,7 +47,7 @@ function locationHandler(request, response){
         superagent.get(url)
         .query(queryParams)
         .then(data => {
-          console.log('results from superagent', data.body);
+          console.log('location results from superagent', data.body);
           const geoData = data.body[0];
           const location = new Location(city, geoData);
 
@@ -106,8 +106,9 @@ app.get('/trails', (request, response) => {
 //////////////// MOVIE HANDLER 
 
 function movieHandler(request, response){
+
   let city = request.query.search_query;
-  let moviesURL = 'https://api.themoviedb.org/3/search/movie';
+  let url= 'https://api.themoviedb.org/3/search/movie';
   let safeValue = [city];
   let sqlQuery = 'SELECT * FROM locations WHERE search_query LIKE ($1);'; 
 
@@ -117,9 +118,37 @@ function movieHandler(request, response){
     format: 'json',
     limit: 5,
   }
+  client.query(sqlQuery, safeValue)
+  .then(sqlResults => {
+    console.log(city);
+    if (sqlResults.rowCount !== 0) {
+      console.log(sqlResults);
+      response.status(200).send(sqlResults.rows[0]);
+    } else {
+      superagent.get(url)
+      .query(queryParams)
+      .then(data => {
+        console.log('movie results from superagent', data.body);
+        const geoData = data.body[0];
+        const location = new Location(city, geoData);
 
+        response.status(200).send(location);
+      }).catch(err => {
+        console.log(err)
+        response.status(500).send('Sorry, something went wrong!');
+      })
+    }
+  })
 
 }
+
+//////////////// YELP HANDLER: 
+
+// function yelpHandler(request, response){
+//   let city = request.query.search_query;
+//   let url = https://api.yelp.com/v3/businesses/search
+    
+// }
 
 //////////////// CONSTRUCTORS: 
 
@@ -143,7 +172,17 @@ function Hiking(obj) {
   this.conditions_time = obj.conditionDate.slice(obj.conditionDate.indexOf(' ') + 1, obj.conditionDate.length);
 }
 
+function Movies(obj){
+  this.title = obj.title;
+  this.overview = obj.overview;
+  this.average_votes = obj.vote_average;
+  this.total_votes = obj.vote_count;
+  this.image_url = `https://image.tmdb.org/t/p/w500/${obj.poster_path}`;
+  this.popularity = obj.popularity;
+  this.released_on = obj.released_date;
+}
 
+////////////////
 app.get('*', (request, response) => {
   response.status(404).send('sorry!')
 })
